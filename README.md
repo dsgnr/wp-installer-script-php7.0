@@ -2,6 +2,13 @@
 
 A small bash script to dynamically create a new WP installation, along with a new Nginx host file to really speed up your development. This script is designed for PHP 7.0 so if you are using PHP 5.6 please go to this script (Add link here). 
 
+== Prerequisites ==
+
+* Nginx
+* PHP 7.0-FPM
+* MySQL (or MariaDB)
+* WP CLI
+
 == What this script does ==
 
 * Creates a new database (user defined)
