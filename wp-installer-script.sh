@@ -90,12 +90,12 @@ wp core install --url=$siteurl --title=$sitetitle --admin_user=$adminusername --
 # make new vhost
 echo "\033[31mCreating new Nginx host"
 echo "server {
-	server_name "$sitename";
+	server_name $sitename;
 	listen 80;
         port_in_redirect off;
-	access_log   /var/log/nginx/"$sitename".access.log;
-	error_log    /var/log/nginx/"$sitename".error.log;
-	root "$SITESTORE"/"$sitename";
+	access_log   /var/log/nginx/$sitename.access.log;
+	error_log    /var/log/nginx/$sitename.error.log;
+	root $SITESTORE/$sitename;
 	index index.html index.php;
 	location / {
 		try_files $uri $uri/ /index.php?$args;
