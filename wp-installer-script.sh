@@ -3,70 +3,77 @@
 # https://www.danielhand.io
 #!/bin/bash -e
 sitestore=/var/www
+
+#define colors for output
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+
 clear
-echo "============================================"
-echo "WordPress Install Script"
-echo "============================================"
-echo "Do you need to setup new MySQL database? (y/n)"
+echo "${green}============================================${reset}"
+echo "${green}WordPress Install Script${reset}"
+echo "${green}============================================${reset}"
+echo "${green}Do you need to setup new MySQL database? (y/n)${reset}"
 read -e setupmysql
 if [ "$setupmysql" == y ] ; then
-	echo "MySQL Admin User: "
+	echo "${green}MySQL Admin User: ${reset}"
 	read -e mysqluser
-	echo "MySQL Admin Password: "
+	echo "${green}MySQL Admin Password: ${reset}"
 	read -s mysqlpass
-	echo "MySQL Host (Enter for default 'localhost'): "
+	echo "${green}MySQL Host (Enter for default 'localhost'): ${reset}"
 	read -e mysqlhost
 		mysqlhost=${mysqlhost:-localhost}
 fi
-echo "Domain name of site (without www)"
+echo "${green}Domain name of site (without www)${reset}"
 read -e domain
-echo "Database Name: "
+echo "${green}Database Name: ${reset}"
 read -e dbname
-echo "Database User: "
+echo "${green}Database User: ${reset}"
 read -e dbuser
-echo "Database Password: "
+echo "${green}Database Password: ${reset}"
 read -s dbpass
-echo "Please enter the database prefix (with underscore afterwards):"
+echo "${green}Please enter the database prefix (with underscore afterwards):${reset}"
 read -e dbprefix
-echo "Please specify WP language (eg. en_GB):"
+echo "${green}Please specify WP language (eg. en_GB):${reset}"
 read -e wplocale
-echo "Site title:"
+echo "${green}Site title:${reset}"
 read -e sitetitle
-echo "Site administrator username:"
+echo "${green}Site administrator username:${reset}"
 read -e adminusername
-echo "Site administrator password:"
+echo "${green}Site administrator password:${reset}"
 read -s adminpass
-echo "Site administrator email address:"
+echo "${green}${green}Site administrator email address:${reset}"
 read -e adminemail
-echo "Site url:"
+echo "${green}Site url:${reset}"
 read -e siteurl
 
-echo "Do basic hardening of wp-config? (y/n)"
+echo "${green}Do basic hardening of wp-config? (y/n)${reset}"
 read -e harden
 
-echo "Do you want to install a new Nginx host? (y/n)"
+echo "${green}Do you want to install a new Nginx host? (y/n)${reset}"
 read -e installnginx
 
-echo "Last chance - sure you want to run the install? (y/n)"
+echo "${green}Last chance - sure you want to run the install? (y/n)${reset}"
 read -e run
 if [ "$run" == y ] ; then
 	if [ "$setupmysql" == y ] ; then
-		echo "============================================"
-		echo "Setting up the database."
-		echo "============================================"
+		echo "${green}============================================${reset}"
+		echo "${green}Setting up the database.${reset}"
+		echo "${green}============================================${reset}"
 		#login to MySQL, add database, add user and grant permissions
 		dbsetup="create database $dbname;GRANT ALL PRIVILEGES ON $dbname.* TO $dbuser@$mysqlhost IDENTIFIED BY '$dbpass';FLUSH PRIVILEGES;"
 		mysql -u $mysqluser -p$mysqlpass -e "$dbsetup"
 		if [ $? != "0" ]; then
-			echo "============================================"
-			echo "[Error]: Database creation failed. Aborting."
-			echo "============================================"
+			echo "${red}============================================${reset}"
+			echo "${red}[Error]: Database creation failed. Aborting.${reset}"
+			echo "${red}============================================${reset}"
 			exit 1
 		fi
 	fi
-	echo "============================================"
-	echo "Installing WordPress for you."
-	echo "============================================"
+	echo "${green}============================================${reset}"
+	echo "${green}Installing WordPress for you.${reset}"
+	echo "${green}============================================${reset}"
 
 
 
@@ -74,30 +81,30 @@ if [ "$run" == y ] ; then
 
 mkdir $sitestore/$domain && cd $sitestore/$domain
 
-echo "Downloading the latest version of WordPress"
+echo "${green}Downloading the latest version of WordPress${reset}"
 wp core download --allow-root
 
 # wp cli edit config
-echo "Configuring WordPress configuration"
+echo "${green}Configuring WordPress configuration${reset}"
 wp core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass --dbprefix=$dbprefix --locale=$wplocale --allow-root
 
 # wp cli add administrator credentials
 wp core install --url=$siteurl --title=$sitetitle --admin_user=$adminusername --admin_password=$adminpass --admin_email=$adminemail --allow-root
 
 if [ "$harden" == y ] ; then
-                echo "============================================"
-                echo "Basic WordPress hardening."
-                echo "============================================"
+                echo "${green}============================================${reset}"
+                echo "${green}Basic WordPress hardening.${reset}"
+                echo "${green}============================================${reset}"
 		rm $sitestore/$domain/license.txt $sitestore/$domain/readme.html $sitestore/$domain/wp-config-sample.php
 fi
 
 
         if [ "$installnginx" == y ] ; then
-                echo "============================================"
-                echo "Creating Nginx host."
-                echo "============================================"
+                echo "${green}============================================${reset}"
+                echo "${green}Creating Nginx host.${reset}"
+                echo "${green}============================================${reset}"
 # make new vhost
-echo "Creating new Nginx host"
+echo "${green}Creating new Nginx host${reset}"
 cat > /etc/nginx/sites-available/$domain <<EOF
 server {
 	server_name $domain;
@@ -134,19 +141,21 @@ EOF
 # symlink for vhost
 sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/$domain
 # restart nginx
-echo "Restarting Nginx"
+echo "${green}Restarting Nginx${reset}"
 sudo service nginx restart
 
 
         fi
 
 
-	echo "Changing permissions..."
+	echo "${green}Changing permissions...${reset}"
 sudo chown -R  www-data:www-data $sitestore/$domain
 sudo find $sitestore/$domain -type d -exec chmod 755 {} +
 sudo find $sitestore/$domain -type f -exec chmod 644 {} +
-	echo "========================="
-	echo "[Success]: Installation is complete."
-	echo "========================="
+	echo "${green}=========================${reset}"
+	echo "${green}[Success]: Installation is complete.${reset}"
+	echo "${green}Your new WordPress installation can be found at http://$domain${reset}"
+	echo "${green}You can log in to your new WordPress installation here: http://$domain/wp-login.php${reset}"
+	echo "${green}=========================${reset}"
 
 fi
