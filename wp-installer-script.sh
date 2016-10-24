@@ -70,7 +70,7 @@ if [ "$run" == y ] ; then
 	#download wordpress
 # wp cli download wp
 
-mkdir $sitestore/$domain && cd $sitestore/$domain
+mkdir "$sitestore"/"$domain" && cd "$sitestore"/"$domain"
 
 echo "\033[31mDownloading the latest version of WordPress"
 wp core download --allow-root
@@ -119,9 +119,9 @@ echo "server {
 		fastcgi_split_path_info ^(.+\.php)(.*)$;
 		fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
 	}      
-}" >> /etc/nginx/sites-available/$domain
+}" >> /etc/nginx/sites-available"/$domain"
 # symlink for vhost
-sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/$domain
+sudo ln -s /etc/nginx/sites-available/"$domain" /etc/nginx/sites-enabled/"$domain"
 # restart nginx
 echo "\033[31mRestarting Nginx"
 sudo service nginx restart
@@ -131,9 +131,9 @@ sudo service nginx restart
 
 
 	echo "Changing permissions..."
-sudo chown -R  www-data:www-data $sitestore/$sitename
-sudo find $sitestore/$sitename -type d -exec chmod 755 {} +
-sudo find $sitestore/$sitename -type f -exec chmod 644 {} +
+sudo chown -R  www-data:www-data "$sitestore"/"$sitename"
+sudo find "$sitestore"/"$sitename" -type d -exec chmod 755 {} +
+sudo find "$sitestore"/"$sitename" -type f -exec chmod 644 {} +
 	echo "========================="
 	echo "[Success]: Installation is complete."
 	echo "========================="
