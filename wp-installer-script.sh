@@ -98,13 +98,14 @@ fi
                 echo "============================================"
 # make new vhost
 echo "Creating new Nginx host"
-echo "server {
-	server_name "$domain";
+cat > /etc/nginx/sites-available/$domain <<EOF
+server {
+	server_name $domain;
 	listen 80;
         port_in_redirect off;
-	access_log   /var/log/nginx/"$domain".access.log;
-	error_log    /var/log/nginx/"$domain".error.log;
-	root "$sitestore"/"$domain";
+	access_log   /var/log/nginx/$domain.access.log;
+	error_log    /var/log/nginx/$domain.error.log;
+	root $sitestore/$domain;
 	index index.html index.php;
 	location / {
 		try_files \$uri \$uri/ /index.php?\$args;
@@ -121,14 +122,15 @@ echo "server {
 		deny all;
 	}
 
-	location ~ \.php$ {
+	location ~ \.php\$ {
 		try_files \$uri =404;
 		include fastcgi_params;
 		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
-		fastcgi_split_path_info ^(.+\.php)(.*)$;
-		fastcgi_param  SCRIPT_FILENAME \$document_root$fastcgi_script_name;
+		fastcgi_split_path_info ^(.+\.php)(.*)\$;
+		fastcgi_param  SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 	}
-}" >> /etc/nginx/sites-available/"$domain"
+}
+EOF
 # symlink for vhost
 sudo ln -s /etc/nginx/sites-available/"$domain" /etc/nginx/sites-enabled/"$domain"
 # restart nginx
