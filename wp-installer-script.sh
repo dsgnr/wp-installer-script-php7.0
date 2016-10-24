@@ -84,6 +84,13 @@ wp core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass --dbprefix=$db
 # wp cli add administrator credentials
 wp core install --url=$siteurl --title=$sitetitle --admin_user=$adminusername --admin_password=$adminpass --admin_email=$adminemail --allow-root
 
+if [ "$harden" == y ] ; then
+                echo "============================================"
+                echo "Basic WordPress hardening."
+                echo "============================================"
+		rm $SITESTORE/$sitename/license.txt $SITESTORE/$sitename/readme.html
+fi
+
 
         if [ "$installnginx" == y ] ; then
                 echo "============================================"
