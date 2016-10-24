@@ -67,16 +67,18 @@ if [ "$run" == y ] ; then
 	echo "============================================"
 	echo "Installing WordPress for you."
 	echo "============================================"
-	#download wordpress
-# wp cli download wp
+
+
+
+#download wordpress
 
 mkdir "$sitestore"/"$domain" && cd "$sitestore"/"$domain"
 
-echo "\033[31mDownloading the latest version of WordPress"
+echo "Downloading the latest version of WordPress"
 wp core download --allow-root
 
 # wp cli edit config
-echo "\033[31mConfiguring WordPress configuration"
+echo "Configuring WordPress configuration"
 wp core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass --dbprefix=$dbprefix --locale=$wplocale --allow-root
 
 # wp cli add administrator credentials
@@ -88,17 +90,17 @@ wp core install --url=$siteurl --title=$sitetitle --admin_user=$adminusername --
                 echo "Creating Nginx host."
                 echo "============================================"
 # make new vhost
-echo "\033[31mCreating new Nginx host"
+echo "Creating new Nginx host"
 echo "server {
-	server_name $sitename;
+	server_name "$sitename";
 	listen 80;
         port_in_redirect off;
-	access_log   /var/log/nginx/$sitename.access.log;
-	error_log    /var/log/nginx/$sitename.error.log;
-	root $SITESTORE/$sitename;
+	access_log   /var/log/nginx/"$sitename".access.log;
+	error_log    /var/log/nginx/"$sitename".error.log;
+	root "$SITESTORE"/"$sitename";
 	index index.html index.php;
 	location / {
-		try_files $uri $uri/ /index.php?$args;
+		try_files \$uri \$uri/ /index.php?\$args;
 	}
 	# Cache static files for as long as possible
 	location ~*.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|css|rss|atom|js|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf|cur)$ {
@@ -106,24 +108,24 @@ echo "server {
         log_not_found off;
         access_log off;
 	}
-		
+
 	# Deny public access to wp-config.php
 	location ~* wp-config.php {
 		deny all;
 	}
-		
+
 	location ~ \.php$ {
-		try_files $uri =404;
+		try_files \$uri =404;
 		include fastcgi_params;
 		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
 		fastcgi_split_path_info ^(.+\.php)(.*)$;
-		fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
-	}      
-}" >> /etc/nginx/sites-available"/$domain"
+		fastcgi_param  SCRIPT_FILENAME \$document_root$fastcgi_script_name;
+	}
+}" >> /etc/nginx/sites-available/"$domain"
 # symlink for vhost
 sudo ln -s /etc/nginx/sites-available/"$domain" /etc/nginx/sites-enabled/"$domain"
 # restart nginx
-echo "\033[31mRestarting Nginx"
+echo "Restarting Nginx"
 sudo service nginx restart
 
 
