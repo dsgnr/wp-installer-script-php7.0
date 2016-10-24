@@ -72,7 +72,7 @@ if [ "$run" == y ] ; then
 
 #download wordpress
 
-mkdir "$sitestore"/"$domain" && cd "$sitestore"/"$domain"
+mkdir $sitestore/$domain && cd $sitestore/$domain
 
 echo "Downloading the latest version of WordPress"
 wp core download --allow-root
@@ -88,7 +88,7 @@ if [ "$harden" == y ] ; then
                 echo "============================================"
                 echo "Basic WordPress hardening."
                 echo "============================================"
-		rm $sitestore/$domain/license.txt $sitestore/$domain/readme.html
+		rm $sitestore/$domain/license.txt $sitestore/$domain/readme.html $sitestore/$domain/wp-config-sample.php
 fi
 
 
@@ -132,7 +132,7 @@ server {
 }
 EOF
 # symlink for vhost
-sudo ln -s /etc/nginx/sites-available/"$domain" /etc/nginx/sites-enabled/"$domain"
+sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/$domain
 # restart nginx
 echo "Restarting Nginx"
 sudo service nginx restart
