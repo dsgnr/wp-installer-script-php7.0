@@ -27,7 +27,7 @@ read -e dbuser
 echo "Database Password: "
 read -s dbpass
 echo "Please enter the database prefix (with underscore afterwards):"
-echo -e dbprefix
+read -e dbprefix
 echo "Please specify WP language (eg. en_GB):"
 read -e wplocale
 echo "Site title:"
@@ -88,7 +88,7 @@ if [ "$harden" == y ] ; then
                 echo "============================================"
                 echo "Basic WordPress hardening."
                 echo "============================================"
-		rm $SITESTORE/$sitename/license.txt $SITESTORE/$sitename/readme.html
+		rm $sitestore/$domain/license.txt $sitestore/$domain/readme.html
 fi
 
 
@@ -99,12 +99,12 @@ fi
 # make new vhost
 echo "Creating new Nginx host"
 echo "server {
-	server_name "$sitename";
+	server_name "$domain";
 	listen 80;
         port_in_redirect off;
-	access_log   /var/log/nginx/"$sitename".access.log;
-	error_log    /var/log/nginx/"$sitename".error.log;
-	root "$SITESTORE"/"$sitename";
+	access_log   /var/log/nginx/"$domain".access.log;
+	error_log    /var/log/nginx/"$domain".error.log;
+	root "$sitestore"/"$domain";
 	index index.html index.php;
 	location / {
 		try_files \$uri \$uri/ /index.php?\$args;
@@ -140,9 +140,9 @@ sudo service nginx restart
 
 
 	echo "Changing permissions..."
-sudo chown -R  www-data:www-data "$sitestore"/"$sitename"
-sudo find "$sitestore"/"$sitename" -type d -exec chmod 755 {} +
-sudo find "$sitestore"/"$sitename" -type f -exec chmod 644 {} +
+sudo chown -R  www-data:www-data $sitestore/$domain
+sudo find $sitestore/$domain -type d -exec chmod 755 {} +
+sudo find $sitestore/$domain -type f -exec chmod 644 {} +
 	echo "========================="
 	echo "[Success]: Installation is complete."
 	echo "========================="
