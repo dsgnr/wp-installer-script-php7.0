@@ -27,22 +27,45 @@ if [ "$setupmysql" == y ] ; then
 fi
 echo "${green}Domain name of site (without www)${reset}"
 read -e domain
-echo "${green}Database Name: ${reset}"
+echo "${green}Database Name:${reset}"
 read -e dbname
-echo "${green}Database User: ${reset}"
+echo "${green}Database User:${reset}"
 read -e dbuser
-echo "${green}Database Password: ${reset}"
-read -s dbpass
-echo "${green}Please enter the database prefix (with underscore afterwards):${reset}"
+read -s -p "${green}Database password:${reset}" dbpass
+echo 
+read -s -p "${green}Database password (again):${reset}" dbpass2
+while [ "$dbpass" != "$dbpass2" ];
+do
+    echo 
+    echo "${green}Passwords do not match! Please try again${reset}"
+    read -s -p "${green}Database password: ${reset}" dbpass
+    echo
+    read -s -p "${green}Database password (again):${reset}" dbpass2
+done
+
+echo "${green}Please enter the database prefix (with underscore afterwards) (Enter for default 'wp_'):${reset}"
 read -e dbprefix
-echo "${green}Please specify WP language (eg. en_GB):${reset}"
+		dbprefix=${dbprefix:-wp_}
+echo "${green}Please specify WP language (Enter for default 'en_GB'):${reset}"
 read -e wplocale
+		wplocale=${wplocale:-en_GB}
 echo "${green}Site title:${reset}"
 read -e sitetitle
 echo "${green}Site administrator username:${reset}"
 read -e adminusername
-echo "${green}Site administrator password:${reset}"
-read -s adminpass
+
+read -s -p "${green}Admin password:${reset}" adminpass
+echo 
+read -s -p "${green}Admin password (again):${reset}" adminpass2
+while [ "$adminpass" != "$adminpass2" ];
+do
+    echo 
+    echo "${green}Passwords do not match! Please try again${reset}"
+    read -s -p "${green}Admin password: ${reset}" adminpass
+    echo
+    read -s -p "${green}Admin password (again):${reset}" adminpass2
+done
+
 echo "${green}${green}Site administrator email address:${reset}"
 read -e adminemail
 echo "${green}Site url:${reset}"
@@ -107,7 +130,7 @@ fi
 echo "${green}Creating new Nginx host${reset}"
 cat > /etc/nginx/sites-available/$domain <<EOF
 server {
-	server_name $domain;
+	server_name www.$domain $domain;
 	listen 80;
         port_in_redirect off;
 	access_log   /var/log/nginx/$domain.access.log;
