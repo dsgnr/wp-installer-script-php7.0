@@ -18,7 +18,7 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 
 # Define default plugins to install. Please use plugin slugs and saparate using a space
-plugins=( wordpress-seo ewww-image-optimizer better-wp-security )
+WPPLUGINS=( wordpress-seo ewww-image-optimizer better-wp-security )
 
 clear
 echo "${green}============================================${reset}"
@@ -156,12 +156,12 @@ if [ "$plugininstall" == y ] ; then
                 echo "${green}============================================${reset}"
                 echo "${green}Installing default plugins.${reset}"
                 echo "${green}============================================${reset}"
-
-for plugin in "${plugins[@]}"; do
-    if [ $? -eq 1 ]; then
-        wp plugin install $plugin --activate --allow-root
-    fi
-done
+		wp plugin install ${WPPLUGINS[@]} --activate --allow-root
+#for plugin in "${plugins[@]}"; do
+ #   if [ $? -eq 1 ]; then
+#        wp plugin install $plugin --activate --allow-root
+ #   fi
+#done
 
 fi
 
