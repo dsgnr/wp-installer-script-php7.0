@@ -2,13 +2,23 @@
 # @author: Daniel Hand
 # https://www.danielhand.io
 #!/bin/bash -e
+
+# Define site location
 sitestore=/var/www
 
-#define colors for output
+# Define wp-content folder name
+wpcontent=lib
+
+# Define name of new WP core folder
+core=core
+
+# Define colors for output
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
 
+# Define default plugins to install. Please use plugin slugs and separate using a space
+WPPLUGINS=( autodescription mainwp-child ewww-image-optimizer better-wp-security duplicate-post caldera-forms wp-theme-optimizer )
 
 clear
 echo "${green}============================================${reset}"
@@ -32,17 +42,17 @@ read -e dbname
 echo "${green}Database User:${reset}"
 read -e dbuser
 read -s -p "${green}Database password:${reset}" dbpass
-echo 
+echo
 read -s -p "${green}Database password (again):${reset}" dbpass2
 while [ "$dbpass" != "$dbpass2" ];
 do
-    echo 
+    echo
     echo "${green}Passwords do not match! Please try again${reset}"
     read -s -p "${green}Database password: ${reset}" dbpass
     echo
     read -s -p "${green}Database password (again):${reset}" dbpass2
 done
-
+echo
 echo "${green}Please enter the database prefix (with underscore afterwards) (Enter for default 'wp_'):${reset}"
 read -e dbprefix
 		dbprefix=${dbprefix:-wp_}
@@ -55,24 +65,34 @@ echo "${green}Site administrator username:${reset}"
 read -e adminusername
 
 read -s -p "${green}Admin password:${reset}" adminpass
-echo 
+echo
 read -s -p "${green}Admin password (again):${reset}" adminpass2
 while [ "$adminpass" != "$adminpass2" ];
 do
-    echo 
-    echo "${green}Passwords do not match! Please try again${reset}"
+    echo "${red}Passwords do not match! Please try again${reset}"
     read -s -p "${green}Admin password: ${reset}" adminpass
     echo
     read -s -p "${green}Admin password (again):${reset}" adminpass2
 done
-
+echo
 echo "${green}${green}Site administrator email address:${reset}"
 read -e adminemail
-echo "${green}Site url:${reset}"
+
+echo "${green}Site url (with www.):${reset}"
 read -e siteurl
 
-echo "${green}Do basic hardening of wp-config? (y/n)${reset}"
-read -e harden
+#echo "${green}Do basic hardening of wp-config? (y/n)${reset}"
+#read -e harden
+
+echo "${green}Install default plugins? (y/n)${reset}"
+read -e plugininstall
+
+echo "${green}Install a theme? (y/n)${reset}"
+read -e themeinstall
+if [ "$themeinstall" == y ] ; then
+echo "${green}Theme location? (enter a local or remote path to install from a zip, or a slug to install from the repo)${reset}"
+	read -e themelocation
+fi
 
 echo "${green}Do you want to install a new Nginx host? (y/n)${reset}"
 read -e installnginx
@@ -119,8 +139,46 @@ if [ "$harden" == y ] ; then
                 echo "${green}Basic WordPress hardening.${reset}"
                 echo "${green}============================================${reset}"
 		rm $sitestore/$domain/license.txt $sitestore/$domain/readme.html $sitestore/$domain/wp-config-sample.php
+		mv $sitestore/$domain/wp-content/ $sitestore/$domain/$wpcontent/
+		mkdir $sitestore/$domain/$core
+		mv $sitestore/$domain/* $sitestore/$domain/$core/.
+		mv $sitestore/$domain/$wpcontent $sitestore/$domain/$core/wp-config.php $sitestore/$domain/.
+		cp $sitestore/$domain$/$core/index.php $sitestore/$domain/index.php
+
+# Edit the index.php file to work with the new core location
+sed '$ a\
+> require( dirname( __FILE__ ) . '/$core/wp-blog-header.php' );' $sitestore/$domain/index.php
+
+# Edit the wp-config.php file to work with the new core and wp-content locations
+sed '1 a\
+>
+define( 'WP_CONTENT_DIR', '$sitestore/$domain/$wpcontent' );
+define( 'WP_CONTENT_URL', 'http://$domain/$wpcontent' );
+define('WP_HOME','http://$domain');
+define('WP_SITEURL','http://$domain/$core');' $sitestore/$domain/wp-config.php
+
 fi
 
+if [ "$plugininstall" == y ] ; then
+                echo "${green}============================================${reset}"
+                echo "${green}Installing and activating default plugins.${reset}"
+                echo "${green}============================================${reset}"
+		wp plugin install ${WPPLUGINS[@]} --activate --allow-root
+#for plugin in "${plugins[@]}"; do
+ #   if [ $? -eq 1 ]; then
+#        wp plugin install $plugin --activate --allow-root
+ #   fi
+#done
+
+fi
+
+if [ "$themeinstall" == y ] ; then
+
+	echo "${green}============================================${reset}"
+	echo "${green}Installing and activating theme.${reset}"
+	echo "${green}============================================${reset}"
+	wp theme install $themelocation --activate --allow-root
+fi
 
         if [ "$installnginx" == y ] ; then
                 echo "${green}============================================${reset}"
@@ -130,7 +188,7 @@ fi
 echo "${green}Creating new Nginx host${reset}"
 cat > /etc/nginx/sites-available/$domain <<EOF
 server {
-	server_name www.$domain $domain;
+	server_name $siteurl $domain;
 	listen 80;
         port_in_redirect off;
 	access_log   /var/log/nginx/$domain.access.log;
