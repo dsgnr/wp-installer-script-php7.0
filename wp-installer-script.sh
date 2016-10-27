@@ -87,11 +87,28 @@ read -e siteurl
 echo "${green}Install default plugins? (y/n)${reset}"
 read -e plugininstall
 
-echo "${green}Install a theme? (y/n)${reset}"
-read -e themeinstall
-if [ "$themeinstall" == y ] ; then
-echo "${green}Theme location? (enter a local or remote path to install from a zip, or a slug to install from the repo)${reset}"
-	read -e themelocation
+echo "${green}Create new Underscores based starter theme? (y/n)${reset}"
+read -e startertheme
+if [ "$startertheme" == y ] ; then
+	echo "${green}Theme name:${reset}"
+	read -e startername
+	echo "${green}Theme slug:${reset}"
+	read -e starterslug
+	echo "${green}Theme author:${reset}"
+	read -e starterauthor
+	echo "${green}Theme author URI:${reset}"
+	read -e starteruri
+	echo "${green}Sassify? (y/n)${reset}"
+	read -e startersassify
+fi
+
+if [ "$startertheme" == n ] ; then
+	echo "${green}Install a theme? (y/n)${reset}"
+	read -e themeinstall
+	if [ "$themeinstall" == y ] ; then
+	echo "${green}Theme location? (enter a local or remote path to install from a zip, or a slug to install from the repo)${reset}"
+		read -e themelocation
+	fi
 fi
 
 echo "${green}Do you want to install a new Nginx host? (y/n)${reset}"
@@ -172,6 +189,22 @@ if [ "$plugininstall" == y ] ; then
 
 fi
 
+if [ "$startertheme" == y ] ; then
+
+	echo "${green}============================================${reset}"
+	echo "${green}Creating and activating starter theme.${reset}"
+	echo "${green}============================================${reset}"
+
+	if [ "$startersassify" == n ] ; then
+		wp scaffold _s $starterslug --theme_name="$startername" --author="$starterauthor" --author_uri="$starteruri" --activate --allow-root
+	fi
+
+	if [ "$startersassify" == y ] ; then
+		wp scaffold _s $starterslug --theme_name="$startername" --author="$starterauthor" --author_uri="$starteruri" --sassify --activate --allow-root
+	fi
+
+fi
+
 if [ "$themeinstall" == y ] ; then
 
 	echo "${green}============================================${reset}"
@@ -240,3 +273,4 @@ sudo find $sitestore/$domain -type f -exec chmod 644 {} +
 	echo "${green}=========================${reset}"
 
 fi
+
