@@ -81,8 +81,8 @@ read -e adminemail
 echo "${green}Site url:${reset}"
 read -e siteurl
 
-#echo "${green}Do basic hardening of wp-config? (y/n)${reset}"
-#read -e harden
+echo "${green}Do basic hardening of wp-config? (y/n)${reset}"
+read -e harden
 
 echo "${green}Install default plugins? (y/n)${reset}"
 read -e plugininstall
@@ -135,20 +135,19 @@ if [ "$harden" == y ] ; then
 		mv $sitestore/$domain/wp-content/ $sitestore/$domain/$wpcontent/
 		mkdir $sitestore/$domain/$core
 		mv $sitestore/$domain/* $sitestore/$domain/$core/.
-		mv $sitestore/$domain/$wpcontent $sitestore/$domain/$core/wp-config.php $sitestore/$domain/.
-		cp $sitestore/$domain$/$core/index.php $sitestore/$domain/index.php
+		mv $sitestore/$domain/$core/$wpcontent $sitestore/$domain/$core/wp-config.php $sitestore/$domain/.
+		cp $sitestore/$domain/$core/index.php $sitestore/$domain/index.php
 
 # Edit the index.php file to work with the new core location
-sed '$ a\
-> require( dirname( __FILE__ ) . '/$core/wp-blog-header.php' );' $sitestore/$domain/index.php
+sed -i "s|/wp-blog-header.php|/core/wp-blog-header.php|g" $sitestore/$domain/index.php
+
 
 # Edit the wp-config.php file to work with the new core and wp-content locations
-sed '1 a\
->
-define( 'WP_CONTENT_DIR', '$sitestore/$domain/$wpcontent' );
-define( 'WP_CONTENT_URL', 'http://$domain/$wpcontent' );
-define('WP_HOME','http://$domain');
-define('WP_SITEURL','http://$domain/$core');' $sitestore/$domain/wp-config.php
+sed -i "2i\
+define( 'WP_CONTENT_DIR', '$sitestore/$domain/$wpcontent' );\
+define( 'WP_CONTENT_URL', 'http://$domain/$wpcontent' );\
+define('WP_HOME','http://$domain');\
+define('WP_SITEURL','http://$domain/$core');" $sitestore/$domain/wp-config.php
 
 fi
 
@@ -157,12 +156,6 @@ if [ "$plugininstall" == y ] ; then
                 echo "${green}Installing default plugins.${reset}"
                 echo "${green}============================================${reset}"
 		wp plugin install ${WPPLUGINS[@]} --activate --allow-root
-#for plugin in "${plugins[@]}"; do
- #   if [ $? -eq 1 ]; then
-#        wp plugin install $plugin --activate --allow-root
- #   fi
-#done
-
 fi
 
 
